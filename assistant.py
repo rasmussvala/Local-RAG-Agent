@@ -13,7 +13,7 @@ def start_chat_session():
     streamer = TextStreamer(
         pipe.tokenizer,
         skip_prompt=True,
-        skip_special_token=True,
+        skip_special_tokens=True,
     )
 
     print("You: ", end="")
@@ -28,7 +28,7 @@ def start_chat_session():
     while True:
         print("\nAssistant: ", end="")
         output = pipe(messages, max_new_tokens=512, streamer=streamer)
-        answer = output[0]["generated-text"][-1]["content"].strip()
+        answer = output[0]["generated_text"][-1]["content"].strip()
 
         if query.lower() == "goodbye":
             break
