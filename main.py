@@ -193,9 +193,10 @@ def initialize_assistant():
 
 
 def print_found_documents(n, similar_indices, distances):
-    print("Found documents: ")
     for i in range(n):
-        print(f"Index: {similar_indices[i]}, with cosine distance: {distances[i]:.2f}")
+        print(
+            f"Found document with index: {similar_indices[i]} and cosine distance: {distances[i]:.2f}"
+        )
 
 
 if __name__ == "__main__":
