@@ -1,23 +1,22 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_distances
-import re, nltk
+import re, nltk, os
 import numpy as np
 
 # For Part-Of_speech (POS)
 nltk.download("averaged_perceptron_tagger_eng")
 
 
-def lemmatize(text):
-    # Remove uppercase and special chars
-    text = text.lower()
-    text = re.sub(r"[^ a-z]", "", text)
+def lemmatize(tokens):
+    """
+    Lemmatized the tokens which means to convert the tokens to
+    their most basic canonical form.
 
-    stop_words = nltk.corpus.stopwords.words("english")
+    Lemmatization examples:
+    running -> run, walked -> walk
 
-    tokens = [
-        word for word in text.split() if word not in stop_words and len(word) <= 25
-    ]
-
+    :return: a string of all the words lemmatize, can be used to write to corpus.
+    """
     lemmatizer = nltk.wordnet.WordNetLemmatizer()
 
     tagged_tokens = nltk.pos_tag(tokens, tagset=None)
@@ -44,8 +43,24 @@ def lemmatize(text):
     return " ".join(lemmatized_words)
 
 
-def lemmatize_and_remove_stopwords(text):
-    print("hi")
+def tokenize(text):
+    """
+    Remove uppercase and special chars of a text (str)
+    And return an array of tokens (in our case it's just words)
+    """
+
+    text = str(text).lower()
+    text = re.sub(r"[^ a-z]", "", text)
+
+    stop_words = nltk.corpus.stopwords.words("english")
+
+    return [word for word in text.split() if word not in stop_words and len(word) <= 25]
+
+
+def tokenize_and_lemmatize(text):
+    tokens = tokenize(text)
+    res = lemmatize(tokens)
+    return res
 
 
 def search_document(n, query, corpus):
@@ -54,7 +69,7 @@ def search_document(n, query, corpus):
     # Initialize the vectorizer that calculate all the TFIDF
     vectorizer = TfidfVectorizer()
 
-    query_normalized = lemmatize_and_remove_stopwords(query)
+    query_normalized = tokenize_and_lemmatize(query)
 
     # Create a matrix full of vectors with calculated TFIDFs
     corpus_TFIDF = vectorizer.fit_transform(corpus)
@@ -70,4 +85,29 @@ def search_document(n, query, corpus):
     n_most_similar_indices = [str(i).zfill(4) for i in n_most_similar_indices]
 
 
-lemmatize("hello my name is rasmus and i want to be a race car driver")
+def save_corpus(corpus, file_path):
+    with open(file_path, mode="w", encoding="utf8") as fp:
+        for document in corpus:
+            fp.write("%s\n" % document)
+
+
+def create_corpus(read_directory, write_filename):
+    corpus = []
+
+    with os.scandir(read_directory) as file_paths:
+
+        for file_path in file_paths:
+            if not file_path.is_file():
+                continue
+
+            with open(file_path, mode="r", encoding="utf8") as file:
+                content = file.read()
+                res = tokenize_and_lemmatize(content)
+                corpus.append(res)
+
+    save_corpus(corpus, write_filename)
+
+    print("Corpus saved to: " + write_filename)
+
+
+create_corpus("./documents/", "./corpus.txt")
