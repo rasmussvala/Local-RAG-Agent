@@ -1,3 +1,4 @@
+import shutil
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_distances
 import re, nltk, os
@@ -64,7 +65,7 @@ def tokenize_and_lemmatize(text):
 
 
 def search_document(n, query, corpus):
-    print("Finding relevant documents...")
+    print("\nFinding relevant documents...")
 
     # Initialize the vectorizer that calculate all the TFIDF
     vectorizer = TfidfVectorizer()
@@ -84,6 +85,8 @@ def search_document(n, query, corpus):
     n_most_similar_indices = np.argsort(similarities)[:n]
     n_most_similar_indices = [str(i).zfill(4) for i in n_most_similar_indices]
 
+    return n_most_similar_indices
+
 
 def save_corpus(corpus, file_path):
     with open(file_path, mode="w", encoding="utf8") as fp:
@@ -91,23 +94,78 @@ def save_corpus(corpus, file_path):
             fp.write("%s\n" % document)
 
 
-def create_corpus(read_directory, write_filename):
+def create_corpus(read_directory, write_filename, remove_originals=False):
     corpus = []
+    formatted_directory = "./formatted_documents/"
+
+    # Create a new directory for renamed files if it doesn't exist
+    if not os.path.exists(formatted_directory):
+        os.makedirs(formatted_directory)
 
     with os.scandir(read_directory) as file_paths:
-
-        for file_path in file_paths:
+        for index, file_path in enumerate(file_paths):
             if not file_path.is_file():
                 continue
 
-            with open(file_path, mode="r", encoding="utf8") as file:
+            # Generate new filename with numeric prefix
+            new_filename = f"{index:04d}_{file_path.name}"
+            new_file_path = os.path.join(formatted_directory, new_filename)
+
+            # Copy and rename the file
+            shutil.copy2(file_path.path, new_file_path)
+
+            with open(new_file_path, mode="r", encoding="utf8") as file:
                 content = file.read()
                 res = tokenize_and_lemmatize(content)
                 corpus.append(res)
 
+            # Remove the original file if specified
+            if remove_originals:
+                os.remove(file_path.path)
+
     save_corpus(corpus, write_filename)
 
-    print("Corpus saved to: " + write_filename)
+    print(f"Files renamed and copied to: {formatted_directory}")
+    if remove_originals:
+        print(f"Original files in {read_directory} have been removed.")
+    print(f"Corpus saved to: {write_filename}")
 
 
-create_corpus("./documents/", "./corpus.txt")
+def read_corpus(file_path):
+
+    corpus = []
+
+    with open(file_path, mode="r", encoding="utf8") as file:
+        for line in file:
+            corpus.append(line)
+
+    return corpus
+
+
+def initialize_assistant():
+    path_to_documents = "./documents/"
+    path_to_corpus = "./corpus.txt"
+
+    # create_corpus(path_to_documents, path_to_corpus)
+
+    corpus = read_corpus(path_to_corpus)
+
+    welcome_message = (
+        "\n********************************************************************\n"
+        + "Welcome to a local RAG Agent with access to your internal documents.\n"
+        + 'To end the conversation, say "Goddbye"\n'
+        + "********************************************************************\n"
+    )
+
+    print(welcome_message)
+
+    print("You: ", end="")
+    query = input()
+
+    similar_indices = search_document(3, query, corpus)
+
+    print(similar_indices)
+
+
+if __name__ == "__main__":
+    initialize_assistant()
