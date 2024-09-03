@@ -1,5 +1,9 @@
 from transformers import pipeline, TextStreamer
 
+import warnings
+
+warnings.filterwarnings("ignore", category=UserWarning)
+
 
 def start_chat_session(query, relevant_content):
 

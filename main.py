@@ -1,12 +1,16 @@
 import shutil
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_distances
-import re, nltk, os
+import re
+import nltk
+import os
 import numpy as np
 from assistant import start_chat_session
 
-# For Part-Of_speech (POS)
-nltk.download("averaged_perceptron_tagger_eng")
+# Download necessary NLTK data
+nltk.download("averaged_perceptron_tagger_eng")  # For Part-Of_speech (POS)
+nltk.download("stopwords")
+nltk.download("wordnet")
 
 
 def lemmatize(tokens):
@@ -176,7 +180,7 @@ def initialize_assistant():
     welcome_message = (
         "\n********************************************************************\n"
         + "Welcome to a local RAG Agent with access to your internal documents.\n"
-        + 'To end the conversation, say "Goddbye"\n'
+        + 'To end the conversation, say "Goodbye"\n'
         + "********************************************************************\n"
     )
 
