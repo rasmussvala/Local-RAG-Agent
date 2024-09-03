@@ -1,17 +1,18 @@
 # Local-RAG-Agent
 
-A local RAG agent that you can add documents to and ask questions about. Very much still a work in progress.
+A local RAG agent you can add documents to and ask questions about. Still a work in progress.
 
-## Notes to self
+## Future improvements
 
-- Currently pytorch is installed without cuda support, it's very slow, maybe uninstall, install with cuda and make it only usable for cuda sopported gpus
-- create a command "clear" to restart chat
+- Create a command "clear" to restart chat
+- GUI
+- Easier document add
 
 # Run it on your machine
 
 1. Clone repo with LLM: `git clone --recurse-submodules https://github.com/rasmussvala/Local-RAG-Agent.git`
-2. Create venv: `py -m venv .venv`
-3. Activate venv (Windows): `.\.venv\Scripts\activate`
-4. Install requirments:
+2. Create virtual environment: `py -m venv .venv`
+3. Activate virtual environment (Windows): `.\.venv\Scripts\activate`
+4. Install requirements:
    - Without CUDA: `pip install -r .\requirements.txt`
    - With CUDA: `pip install -r .\requirements_cuda.txt`
