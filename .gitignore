@@ -2,3 +2,4 @@
 corpus.txt
 documents/
 formatted_documents/
+__pycache__/

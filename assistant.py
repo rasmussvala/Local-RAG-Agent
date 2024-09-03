@@ -1,7 +1,7 @@
 from transformers import pipeline, TextStreamer
 
 
-def start_chat_session():
+def start_chat_session(query, relevant_content):
 
     pipe = pipeline(
         "text-generation",
@@ -16,28 +16,38 @@ def start_chat_session():
         skip_special_tokens=True,
     )
 
-    print("You: ", end="")
-    query = input()
+    instructions = (
+        "You provide accurate, helpful, and consise responses based on DOCUMENT. "
+        + "Reference the DOCUMENTS you found the information from. "
+        + "If unsure, admit uncertainty. Do not make up information. "
+        + "Maintain a neutal and professional tone."
+    )
 
-    messages = [
-        {"role": "system", "content": "Here are some instructions: ..."},
-        {"role": "system", "content": "Here are some relevant data: ..."},
+    context = (
+        "DOCUMENT1:\n"
+        + relevant_content[0]
+        + "DOCUMENT2:\n"
+        + relevant_content[0]
+        + "DOCUMENT3:\n"
+        + relevant_content[0]
+    )
+
+    init_messages = [
+        {"role": "system", "content": instructions},
+        {"role": "system", "content": context},
         {"role": "user", "content": query},
     ]
 
     while True:
         print("\nAssistant: ", end="")
-        output = pipe(messages, max_new_tokens=512, streamer=streamer)
+        output = pipe(init_messages, max_new_tokens=512, streamer=streamer)
         answer = output[0]["generated_text"][-1]["content"].strip()
 
         if query.lower() == "goodbye":
             break
 
-        messages.append({"role": "assistant", "content": answer})
+        init_messages.append({"role": "assistant", "content": answer})
 
         print("\nYou: ", end="")
         query = input()
-        messages.append({"role": "user", "content": query})
-
-
-start_chat_session()
+        init_messages.append({"role": "user", "content": query})

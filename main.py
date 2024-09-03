@@ -3,6 +3,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_distances
 import re, nltk, os
 import numpy as np
+from assistant import start_chat_session
 
 # For Part-Of_speech (POS)
 nltk.download("averaged_perceptron_tagger_eng")
@@ -189,7 +190,11 @@ def initialize_assistant():
 
     print_found_documents(n, similar_indices, distances)
 
-    retrive_relevant_content(similar_indices, path_to_formatted_documents)
+    relevant_content = retrive_relevant_content(
+        similar_indices, path_to_formatted_documents
+    )
+
+    start_chat_session(query, relevant_content)
 
 
 def print_found_documents(n, similar_indices, distances):
