@@ -6,67 +6,12 @@ import nltk
 import os
 import numpy as np
 from assistant import start_chat_session
+from functions import tokenize_and_lemmatize
 
 # Download necessary NLTK data
 nltk.download("averaged_perceptron_tagger_eng")  # For Part-Of_speech (POS)
 nltk.download("stopwords")
 nltk.download("wordnet")
-
-
-def lemmatize(tokens):
-    """
-    Lemmatized the tokens which means to convert the tokens to
-    their most basic canonical form.
-
-    Lemmatization examples:
-    running -> run, walked -> walk
-
-    :return: a string of all the words lemmatize, can be used to write to corpus.
-    """
-    lemmatizer = nltk.wordnet.WordNetLemmatizer()
-
-    tagged_tokens = nltk.pos_tag(tokens, tagset=None)
-
-    lemmatized_words = []
-
-    for token, tag in tagged_tokens:
-        if tag.startswith("V"):  # Verb
-            pos_val = "v"
-
-        elif tag.startswith("J"):  # Adjective
-            pos_val = "a"
-
-        elif tag.startswith("R"):  # Adverb
-            pos_val = "r"
-
-        else:
-            pos_val = "n"  # Noun
-
-        lemmatized_word = lemmatizer.lemmatize(token, pos_val)
-
-        lemmatized_words.append(lemmatized_word)
-
-    return " ".join(lemmatized_words)
-
-
-def tokenize(text):
-    """
-    Remove uppercase and special chars of a text (str)
-    And return an array of tokens (in our case it's just words)
-    """
-
-    text = str(text).lower()
-    text = re.sub(r"[^ a-z]", "", text)
-
-    stop_words = nltk.corpus.stopwords.words("english")
-
-    return [word for word in text.split() if word not in stop_words and len(word) <= 25]
-
-
-def tokenize_and_lemmatize(text):
-    tokens = tokenize(text)
-    res = lemmatize(tokens)
-    return res
 
 
 def search_document(n, query, corpus):
@@ -92,49 +37,6 @@ def search_document(n, query, corpus):
     n_most_similar_indices = [str(i).zfill(4) for i in n_most_similar_indices]
 
     return n_most_similar_indices, n_most_similar_distances
-
-
-def save_corpus(corpus, file_path):
-    with open(file_path, mode="w", encoding="utf8") as fp:
-        for document in corpus:
-            fp.write("%s\n" % document)
-
-
-def create_corpus(read_directory, write_filename, remove_originals=False):
-    corpus = []
-    formatted_directory = "./formatted_documents/"
-
-    # Create a new directory for renamed files if it doesn't exist
-    if not os.path.exists(formatted_directory):
-        os.makedirs(formatted_directory)
-
-    with os.scandir(read_directory) as file_paths:
-        for index, file_path in enumerate(file_paths):
-            if not file_path.is_file():
-                continue
-
-            # Generate new filename with numeric prefix
-            new_filename = f"{index:04d}_{file_path.name}"
-            new_file_path = os.path.join(formatted_directory, new_filename)
-
-            # Copy and rename the file
-            shutil.copy2(file_path.path, new_file_path)
-
-            with open(new_file_path, mode="r", encoding="utf8") as file:
-                content = file.read()
-                res = tokenize_and_lemmatize(content)
-                corpus.append(res)
-
-            # Remove the original file if specified
-            if remove_originals:
-                os.remove(file_path.path)
-
-    save_corpus(corpus, write_filename)
-
-    print(f"Files renamed and copied to: {formatted_directory}")
-    if remove_originals:
-        print(f"Original files in {read_directory} have been removed.")
-    print(f"Corpus saved to: {write_filename}")
 
 
 def read_corpus(file_path):
